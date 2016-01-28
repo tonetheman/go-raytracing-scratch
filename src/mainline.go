@@ -60,8 +60,8 @@ func (s *Sphere) intersect(rayorig * Vec3,
 	}
 	var thc float64 = math.Sqrt(s.radius2 - d2);
 	// TODO: how do you do this in golang?
-	&t0 = tca - thc;
-	&t1 = tca + thc;
+	*t0 = tca - thc;
+	*t1 = tca + thc;
 	return true;
 }
 
