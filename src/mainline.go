@@ -75,6 +75,37 @@ func (s *Sphere) intersect(rayorig * Vec3,
 	return true;
 }
 
+var INF float64 = 1e8
+
+func trace(rayorig * Vec3, raydir * Vec3, spheres []Sphere, 
+	depth int) Vec3 {
+	var tnear float64 = INF
+	var sphere * Sphere = nil;
+	for i:=0;i<6;i++ {
+		var t0 float64 = INF;
+		var t1 float64 = INF;
+		if (spheres[i].intersect(rayorig,raydir,&t0,&t1)) {
+			if (t0<0) {
+				t0 = t1;
+			}
+			if (t0<tnear) {
+				tnear = t0;
+				sphere = &spheres[i]
+			}
+		}
+	}
+
+	if (sphere==nil) {
+		return Vec3{2,2,2}
+	}
+
+	// TODO: not done here:
+
+
+	
+}
+
+
 func render(spheres [6]Sphere) {
 	var width int = 640
 	var height int = 480;
@@ -97,6 +128,9 @@ func render(spheres [6]Sphere) {
 				((float64(y) + 0.5) * invHeight)) * angle; 
 			var raydir Vec3 = Vec3{xx,yy,-1};
 			raydir.normalize();
+
+			// TODO: not done here
+
 
 			counter++;
 		}
