@@ -101,6 +101,9 @@ func trace(rayorig *Vec3, raydir *Vec3, spheres []Sphere,
 		return Vec3{2, 2, 2}
 	}
 
+	var surfaceColor Vec3 = Vec3{0,0,0}
+	var phit Vec3 = rayorig.add(raydir).multConst(tnear);
+
 	// TODO: not done here:
 
 }
