@@ -81,7 +81,7 @@ var INF float64 = 1e8
 var MAX_RAY_DEPTH int = 5
 
 func mix(a float64, b float64, mix float64) float64 {
-	return b * mix + a * (1-mix)
+	return b*mix + a*(1-mix)
 }
 
 func trace(rayorig Vec3, raydir Vec3, spheres []Sphere,
@@ -106,45 +106,42 @@ func trace(rayorig Vec3, raydir Vec3, spheres []Sphere,
 		return Vec3{2, 2, 2}
 	}
 
-	var surfaceColor Vec3 = Vec3{0,0,0}
-	var phit Vec3 = rayorig.add(raydir).multConst(tnear);
+	var surfaceColor Vec3 = Vec3{0, 0, 0}
+	var phit Vec3 = rayorig.add(raydir).multConst(tnear)
 	var nhit Vec3 = phit.minus(sphere.center)
 	nhit.normalize()
 	var bias float64 = 1e-4
 	var inside bool = false
 	if raydir.dot(nhit) > 0 {
-		nhit = nhit.multConst(-1);
-		inside = true;
+		nhit = nhit.multConst(-1)
+		inside = true
 	}
 
 	if (sphere.transparency > 0 ||
-		sphere.reflection >0) && depth < MAX_RAY_DEPTH {
+		sphere.reflection > 0) && depth < MAX_RAY_DEPTH {
 
-		var facingratio float64 = - raydir.dot(nhit);
-		var fresneleffect float64 = mix(math.Pow(1-facingratio,3),1,0.1);
+		var facingratio float64 = -raydir.dot(nhit)
+		var fresneleffect float64 = mix(math.Pow(1-facingratio, 3), 1, 0.1)
 
 		var refldir Vec3 = raydir.minus(nhit).multConst(2).multConst(raydir.dot(nhit))
 		refldir.normalize()
 
-		var reflection Vec3 = trace(phit.add(nhit).multConst(bias), refldir, spheres,depth+1)
-		var refraction Vec3 = Vec3{0,0,0}
-		if sphere.transparency>0 {
+		var reflection Vec3 = trace(phit.add(nhit).multConst(bias), refldir, spheres, depth+1)
+		var refraction Vec3 = Vec3{0, 0, 0}
+		if sphere.transparency > 0 {
 			var ior float64 = 1.1
 			var eta float64
 			if inside {
 				eta = ior
 			} else {
-				eta = 1/ior
+				eta = 1 / ior
 			}
-			var cosi float64 = - nhit.dot(raydir)
-			var k float64 = 1 - eta * eta * (1-cosi * cosi)
+			var cosi float64 = -nhit.dot(raydir)
+			var k float64 = 1 - eta*eta*(1-cosi*cosi)
 			//Vec3f refrdir = raydir * eta + nhit * (eta *  cosi - sqrt(k));
 			//refrdir.normalize();
 			//refraction = trace(phit - nhit * bias, refrdir, spheres, depth + 1);
 		}
-
-
-
 
 	}
 
