@@ -11,19 +11,19 @@ type Vec3 struct {
 	z float64
 }
 
-func (v *Vec3) add(other *Vec3) Vec3 {
+func (v Vec3) add(other Vec3) Vec3 {
 	return Vec3{v.x + other.x, v.y + other.y, v.z + other.z}
 }
-func (v *Vec3) multConst(c float64) Vec3 {
+func (v Vec3) multConst(c float64) Vec3 {
 	return Vec3{v.x * c, v.y * c, v.z * c}
 }
-func (v *Vec3) mult(other *Vec3) Vec3 {
+func (v *Vec3) mult(other Vec3) Vec3 {
 	return Vec3{other.x * v.x, other.y * v.y, other.z * v.z}
 }
 func (v *Vec3) length2() float64 {
 	return v.x*v.x + v.y*v.y + v.z*v.z
 }
-func (v *Vec3) minus(other *Vec3) Vec3 {
+func (v *Vec3) minus(other Vec3) Vec3 {
 	return Vec3{v.x - other.x, v.y - other.y, v.z - other.z}
 }
 
@@ -38,7 +38,7 @@ func (v *Vec3) normalize() {
 	}
 }
 
-func (v *Vec3) dot(other *Vec3) float64 {
+func (v *Vec3) dot(other Vec3) float64 {
 	return v.x*other.x + v.y*other.y + v.z*other.z
 }
 
@@ -60,14 +60,14 @@ func (s *Sphere) init(c *Vec3, r float64, sc *Vec3, refl float64,
 	s.reflection = refl
 }
 
-func (s *Sphere) intersect(rayorig *Vec3,
-	raydir *Vec3, t0 *float64, t1 *float64) bool {
+func (s *Sphere) intersect(rayorig Vec3,
+	raydir Vec3, t0 *float64, t1 *float64) bool {
 	var l Vec3 = s.center.minus(rayorig)
 	var tca float64 = l.dot(raydir)
 	if tca < 0 {
 		return false
 	}
-	var d2 float64 = l.dot(&l) - tca*tca
+	var d2 float64 = l.dot(l) - tca*tca
 	if d2 > s.radius2 {
 		return false
 	}
@@ -78,8 +78,13 @@ func (s *Sphere) intersect(rayorig *Vec3,
 }
 
 var INF float64 = 1e8
+var MAX_RAY_DEPTH int = 5
 
-func trace(rayorig *Vec3, raydir *Vec3, spheres []Sphere,
+func mix(a float64, b float64, mix float64) float64 {
+	return b * mix + a * (1-mix)
+}
+
+func trace(rayorig Vec3, raydir Vec3, spheres []Sphere,
 	depth int) Vec3 {
 	var tnear float64 = INF
 	var sphere *Sphere = nil
@@ -103,6 +108,45 @@ func trace(rayorig *Vec3, raydir *Vec3, spheres []Sphere,
 
 	var surfaceColor Vec3 = Vec3{0,0,0}
 	var phit Vec3 = rayorig.add(raydir).multConst(tnear);
+	var nhit Vec3 = phit.minus(sphere.center)
+	nhit.normalize()
+	var bias float64 = 1e-4
+	var inside bool = false
+	if raydir.dot(nhit) > 0 {
+		nhit = nhit.multConst(-1);
+		inside = true;
+	}
+
+	if (sphere.transparency > 0 ||
+		sphere.reflection >0) && depth < MAX_RAY_DEPTH {
+
+		var facingratio float64 = - raydir.dot(nhit);
+		var fresneleffect float64 = mix(math.Pow(1-facingratio,3),1,0.1);
+
+		var refldir Vec3 = raydir.minus(nhit).multConst(2).multConst(raydir.dot(nhit))
+		refldir.normalize()
+
+		var reflection Vec3 = trace(phit.add(nhit).multConst(bias), refldir, spheres,depth+1)
+		var refraction Vec3 = Vec3{0,0,0}
+		if sphere.transparency>0 {
+			var ior float64 = 1.1
+			var eta float64
+			if inside {
+				eta = ior
+			} else {
+				eta = 1/ior
+			}
+			var cosi float64 = - nhit.dot(raydir)
+			var k float64 = 1 - eta * eta * (1-cosi * cosi)
+			//Vec3f refrdir = raydir * eta + nhit * (eta *  cosi - sqrt(k));
+			//refrdir.normalize();
+			//refraction = trace(phit - nhit * bias, refrdir, spheres, depth + 1);
+		}
+
+
+
+
+	}
 
 	// TODO: not done here:
 
