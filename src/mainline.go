@@ -2,8 +2,12 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"math"
+	"os"
 )
+
+const SPHERE_COUNT int = 6
 
 type Vec3 struct {
 	x float64
@@ -144,11 +148,42 @@ func trace(rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 			var refrdir Vec3 = raydir.multConst(eta).add(nhit).multConst(eta*cosi - math.Sqrt(k))
 			refldir.normalize()
 			refraction = trace(phit.minus(nhit.multConst(bias)), refrdir, spheres, depth+1)
-
 		}
 
+		// left this in there since this is complex
+		//surfaceColor = (
+		//   reflection * fresneleffect +
+		//   refraction * (1 - fresneleffect) * sphere->transparency)
+		// * sphere->surfaceColor;
+		_tmp0 := reflection.multConst(fresneleffect)
+		_tmp1 := refraction.multConst((1 - fresneleffect) * sphere.transparency)
+		surfaceColor = _tmp0.add(_tmp1)
+
+	} else {
+
+		// diffuse object
+		for i := 0; i < 6; i++ {
+			if spheres[i].emissionColor.x > 0 {
+				var transmission Vec3 = Vec3{1, 1, 1}
+				_ = transmission
+				var lightDirection Vec3 = spheres[i].center.minus(phit)
+				lightDirection.normalize()
+
+				for j := 0; j < 6; j++ {
+					if i != j {
+						var t0, t1 float64
+						if spheres[i].intersect(phit.add(nhit).multConst(bias),
+							lightDirection, &t0, &t1) {
+							transmission = Vec3{0, 0, 0}
+							break
+						}
+					}
+				}
+			}
+		}
 	}
 
+	return surfaceColor.add(sphere.emissionColor)
 }
 
 func render(spheres [6]Sphere) {
@@ -156,7 +191,6 @@ func render(spheres [6]Sphere) {
 	var height int = 480
 
 	var image []Vec3 = make([]Vec3, width*height)
-	fmt.Println(image)
 	var counter int = 0
 	// var pixel Vec3 = image[counter]
 	var invWidth float64 = 1 / float64(width)
@@ -178,13 +212,27 @@ func render(spheres [6]Sphere) {
 		}
 	}
 
-	fmt.Println("P6")
-	fmt.Println(width, height)
-	fmt.Println(255)
+	outf := os.Create("out.ppm")
+	io.WriteString(outf, "P6\n")
+	io.WriteString(outf, fmt.Sprintf("%d %d\n"), width, height)
+	io.WriteString(outf, "255\n")
+
+	counter = 0
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			fmt.Println(math.Min(1, image[counter].x)*255,
+				math.Min(1, image[counter].y)*255,
+				math.Min(1, image[counter].z)*255)
+
+			counter = counter + 1
+		}
+		fmt.Println()
+	}
+	outf.Close()
 }
 
 func main() {
-	var spheres [6]Sphere
+	var spheres [SPHERE_COUNT]Sphere
 	spheres[0] = Sphere{Vec3{0.0, -10004, -20}, 10000, 2 * 10000,
 		Vec3{0.20, 0.20, 0.20}, Vec3{0, 0, 0}, 0, 0.0}
 	spheres[1] = Sphere{Vec3{0.0, 0, -20}, 4, 2 * 4,
