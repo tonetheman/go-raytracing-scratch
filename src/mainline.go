@@ -62,8 +62,11 @@ func (s *Sphere) init(c *Vec3, r float64, sc *Vec3, refl float64,
 
 func (s *Sphere) intersect(rayorig Vec3,
 	raydir Vec3, t0 *float64, t1 *float64) bool {
-	var l Vec3 = s.center.minus(rayorig)
-	var tca float64 = l.dot(raydir)
+	// the next two lines are an experiment
+	// removed types to see what they look like
+	var l = s.center.minus(rayorig) // took out type here
+	var tca = l.dot(raydir)         // took out type here
+
 	if tca < 0 {
 		return false
 	}
