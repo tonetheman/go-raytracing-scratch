@@ -84,7 +84,7 @@ func mix(a float64, b float64, mix float64) float64 {
 	return b*mix + a*(1-mix)
 }
 
-func trace(rayorig Vec3, raydir Vec3, spheres []Sphere,
+func trace(rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 	depth int) Vec3 {
 	var tnear float64 = INF
 	var sphere *Sphere = nil
@@ -138,14 +138,13 @@ func trace(rayorig Vec3, raydir Vec3, spheres []Sphere,
 			}
 			var cosi float64 = -nhit.dot(raydir)
 			var k float64 = 1 - eta*eta*(1-cosi*cosi)
-			//Vec3f refrdir = raydir * eta + nhit * (eta *  cosi - sqrt(k));
-			//refrdir.normalize();
-			//refraction = trace(phit - nhit * bias, refrdir, spheres, depth + 1);
+			var refrdir Vec3 = raydir.multConst(eta).add(nhit).multConst(eta*cosi - math.Sqrt(k))
+			refldir.normalize()
+			refraction = trace(phit.minus(nhit.multConst(bias)), refrdir, spheres, depth+1)
+
 		}
 
 	}
-
-	// TODO: not done here:
 
 }
 
@@ -171,9 +170,7 @@ func render(spheres [6]Sphere) {
 				((float64(y)+0.5)*invHeight)) * angle
 			var raydir Vec3 = Vec3{xx, yy, -1}
 			raydir.normalize()
-
-			// TODO: not done here
-
+			image[counter] = trace(Vec3{0, 0, 0}, raydir, spheres, 0)
 			counter++
 		}
 	}
