@@ -20,13 +20,13 @@ func (v Vec3) add(other Vec3) Vec3 {
 func (v Vec3) multConst(c float64) Vec3 {
 	return Vec3{v.x * c, v.y * c, v.z * c}
 }
-func (v *Vec3) mult(other Vec3) Vec3 {
+func (v Vec3) mult(other Vec3) Vec3 {
 	return Vec3{other.x * v.x, other.y * v.y, other.z * v.z}
 }
-func (v *Vec3) length2() float64 {
+func (v Vec3) length2() float64 {
 	return v.x*v.x + v.y*v.y + v.z*v.z
 }
-func (v *Vec3) minus(other Vec3) Vec3 {
+func (v Vec3) minus(other Vec3) Vec3 {
 	return Vec3{v.x - other.x, v.y - other.y, v.z - other.z}
 }
 
@@ -41,7 +41,7 @@ func (v *Vec3) normalize() {
 	}
 }
 
-func (v *Vec3) dot(other Vec3) float64 {
+func (v Vec3) dot(other Vec3) float64 {
 	return v.x*other.x + v.y*other.y + v.z*other.z
 }
 
