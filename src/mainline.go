@@ -160,7 +160,6 @@ func trace(rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 		for i := 0; i < 6; i++ {
 			if spheres[i].emissionColor.x > 0 {
 				var transmission Vec3 = Vec3{1, 1, 1}
-				_ = transmission
 				var lightDirection Vec3 = spheres[i].center.minus(phit)
 				lightDirection.normalize()
 
@@ -174,6 +173,12 @@ func trace(rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 						}
 					}
 				}
+
+				_tmp0 := surfaceColor.add(sphere.surfaceColor)
+				_tmp0a := _tmp0.mult(transmission)
+				_tmp1 := spheres[i].emissionColor.multConst(math.Max(0, nhit.dot(lightDirection)))
+				surfaceColor = _tmp0a.mult(_tmp1)
+
 			}
 		}
 	}
