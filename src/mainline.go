@@ -52,17 +52,6 @@ type Sphere struct {
 	transparency, reflection    float64
 }
 
-func (s *Sphere) init(c *Vec3, r float64, sc *Vec3, refl float64,
-	transp float64, ec *Vec3) {
-	s.center = *c
-	s.radius = r
-	s.radius2 = r * r
-	s.surfaceColor = *sc
-	s.emissionColor = *ec
-	s.transparency = transp
-	s.reflection = refl
-}
-
 func (s *Sphere) intersect(rayorig Vec3,
 	raydir Vec3, t0 *float64, t1 *float64) bool {
 	// the next two lines are an experiment
@@ -246,10 +235,16 @@ func render(spheres [SphereCount]Sphere) {
 	outf.Close()
 }
 
+func make_sphere(center Vec3, radius float64, surface_color Vec3,
+	reflectivity float64, transparency float64, emission_color Vec3) Sphere {
+	return Sphere{center, radius, 2 * radius, surface_color, emission_color, reflectivity, transparency}
+}
+
 func main() {
 	var spheres [SphereCount]Sphere
-	spheres[0] = Sphere{Vec3{0.0, -10004, -20}, 10000, 2 * 10000,
-		Vec3{0.20, 0.20, 0.20}, Vec3{0, 0, 0}, 0, 0.0}
+	spheres[0] = make_sphere(Vec3{0.0, -10004, -20},
+		10000, Vec3{0.20, 0.20, 0.20},
+		0.0, 0.0, Vec3{0, 0, 0})
 	spheres[1] = Sphere{Vec3{0.0, 0, -20}, 4, 2 * 4,
 		Vec3{1.0, 0.32, 0.36}, Vec3{0, 0, 0}, 1, 0.5}
 	spheres[2] = Sphere{Vec3{5, -1, -15}, 2, 2 * 2,
