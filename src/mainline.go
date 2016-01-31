@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const SPHERE_COUNT int = 6
+const SphereCount int = 6
 
 type Vec3 struct {
 	x float64
@@ -149,14 +149,10 @@ func trace(rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 			refraction = trace(phit.minus(nhit.multConst(bias)), refrdir, spheres, depth+1)
 		}
 
-		// left this in there since this is complex
-		//surfaceColor = (
-		//   reflection * fresneleffect +
-		//   refraction * (1 - fresneleffect) * sphere->transparency)
-		// * sphere->surfaceColor;
 		_tmp0 := reflection.multConst(fresneleffect)
 		_tmp1 := refraction.multConst((1 - fresneleffect) * sphere.transparency)
-		surfaceColor = _tmp0.add(_tmp1)
+		_tmp2 := sphere.surfaceColor.mult(_tmp1)
+		surfaceColor = _tmp0.add(_tmp2)
 
 	} else {
 
@@ -194,11 +190,12 @@ func writePPMHeader(outf *os.File) {
 	binary.Write(outf, binary.LittleEndian, fheader3)
 }
 
-func render(spheres [6]Sphere) {
+func render(spheres [SphereCount]Sphere) {
 	var width int = 640
 	var height int = 480
 
-	var image []Vec3 = make([]Vec3, width*height)
+	// image is of type []Vec3
+	var image = make([]Vec3, width*height)
 	var counter int = 0
 	// var pixel Vec3 = image[counter]
 	var invWidth float64 = 1 / float64(width)
@@ -242,7 +239,7 @@ func render(spheres [6]Sphere) {
 }
 
 func main() {
-	var spheres [SPHERE_COUNT]Sphere
+	var spheres [SphereCount]Sphere
 	spheres[0] = Sphere{Vec3{0.0, -10004, -20}, 10000, 2 * 10000,
 		Vec3{0.20, 0.20, 0.20}, Vec3{0, 0, 0}, 0, 0.0}
 	spheres[1] = Sphere{Vec3{0.0, 0, -20}, 4, 2 * 4,
