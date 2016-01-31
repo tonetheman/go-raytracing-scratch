@@ -256,7 +256,7 @@ func render(spheres [SphereCount]Sphere) {
 
 func make_sphere(center Vec3, radius float64, surface_color Vec3,
 	reflectivity float64, transparency float64, emission_color Vec3) Sphere {
-	return Sphere{center, radius, 2.0 * radius, surface_color, emission_color, reflectivity, transparency}
+	return Sphere{center, radius, radius * radius, surface_color, emission_color, reflectivity, transparency}
 }
 
 func main() {
@@ -264,17 +264,17 @@ func main() {
 	spheres[0] = make_sphere(Vec3{0.0, -10004, -20},
 		10000, Vec3{0.20, 0.20, 0.20},
 		0.0, 0.0, Vec3{0, 0, 0})
-	spheres[1] = Sphere{Vec3{0.0, 0, -20}, 4, 2 * 4,
+	spheres[1] = Sphere{Vec3{0.0, 0, -20}, 4, 4 * 4,
 		Vec3{1.0, 0.32, 0.36}, Vec3{0, 0, 0}, 1, 0.5}
 	spheres[2] = Sphere{Vec3{5, -1, -15}, 2, 2 * 2,
 		Vec3{0.9, 0.76, 0.46}, Vec3{0, 0, 0}, 1, 0.0}
-	spheres[3] = Sphere{Vec3{5, 0, -25}, 3, 2 * 3,
+	spheres[3] = Sphere{Vec3{5, 0, -25}, 3, 3 * 3,
 		Vec3{0.65, 0.77, 0.97}, Vec3{0, 0, 0}, 1, 0.0}
-	spheres[4] = Sphere{Vec3{-5.5, 0, -15}, 3, 2 * 3,
+	spheres[4] = Sphere{Vec3{-5.5, 0, -15}, 3, 3 * 3,
 		Vec3{0.90, 0.90, 0.90}, Vec3{0, 0, 0}, 1, 0.0}
 
 	// light
-	spheres[5] = Sphere{Vec3{0.0, 20, -35}, 3, 2 * 3,
+	spheres[5] = Sphere{Vec3{0.0, 20, -35}, 3, 3 * 3,
 		Vec3{0.0, 0.0, 0.0}, Vec3{3, 3, 3}, 0, 0.0}
 
 	render(spheres)
