@@ -55,12 +55,15 @@ type Sphere struct {
 	transparency, reflection    float64
 }
 
-func (s *Sphere) intersect(rayorig Vec3,
+func (s *Sphere) intersect(tracer bool, rayorig Vec3,
 	raydir Vec3, t0 *float64, t1 *float64) bool {
 	// the next two lines are an experiment
 	// removed types to see what they look like
 	var l = s.center.minus(rayorig) // took out type here
 	var tca = l.dot(raydir)         // took out type here
+	if tracer {
+		fmt.Println("intersect:", s.center, l, tca, raydir)
+	}
 
 	if tca < 0 {
 		return false
@@ -87,9 +90,12 @@ func trace(tracer bool, rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 	var tnear float64 = Inf
 	var sphere *Sphere = nil
 	for i := 0; i < SphereCount; i++ {
+		if tracer {
+			fmt.Println("trace: setting t0,t1 to INFINITY")
+		}
 		var t0 float64 = Inf
 		var t1 float64 = Inf
-		if spheres[i].intersect(rayorig, raydir, &t0, &t1) {
+		if spheres[i].intersect(tracer, rayorig, raydir, &t0, &t1) {
 			if t0 < 0 {
 				t0 = t1
 			}
@@ -162,7 +168,7 @@ func trace(tracer bool, rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 				for j := 0; j < 6; j++ {
 					if i != j {
 						var t0, t1 float64
-						if spheres[i].intersect(phit.add(nhit).multConst(bias),
+						if spheres[i].intersect(tracer, phit.add(nhit).multConst(bias),
 							lightDirection, &t0, &t1) {
 							transmission = Vec3{0, 0, 0}
 							break
@@ -274,7 +280,7 @@ func main() {
 		Vec3{0.90, 0.90, 0.90}, Vec3{0, 0, 0}, 1, 0.0}
 
 	// light
-	spheres[5] = Sphere{Vec3{0.0, 20, -35}, 3, 3 * 3,
+	spheres[5] = Sphere{Vec3{0.0, 20, -30}, 3, 3 * 3,
 		Vec3{0.0, 0.0, 0.0}, Vec3{3, 3, 3}, 0, 0.0}
 
 	render(spheres)
