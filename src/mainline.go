@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-	"io"
+	"encoding/binary"
 	"math"
 	"os"
 )
@@ -186,6 +185,15 @@ func trace(rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 	return surfaceColor.add(sphere.emissionColor)
 }
 
+func writePPMHeader(outf *os.File) {
+	fheader := []byte("P6\n")
+	binary.Write(outf, binary.LittleEndian, fheader)
+	fheader2 := []byte("640 480\n")
+	binary.Write(outf, binary.LittleEndian, fheader2)
+	fheader3 := []byte("255\n")
+	binary.Write(outf, binary.LittleEndian, fheader3)
+}
+
 func render(spheres [6]Sphere) {
 	var width int = 640
 	var height int = 480
@@ -212,21 +220,23 @@ func render(spheres [6]Sphere) {
 		}
 	}
 
-	outf := os.Create("out.ppm")
-	io.WriteString(outf, "P6\n")
-	io.WriteString(outf, fmt.Sprintf("%d %d\n"), width, height)
-	io.WriteString(outf, "255\n")
+	outf, _ := os.Create("out.ppm")
+	writePPMHeader(outf)
 
 	counter = 0
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
-			fmt.Println(math.Min(1, image[counter].x)*255,
-				math.Min(1, image[counter].y)*255,
-				math.Min(1, image[counter].z)*255)
+
+			binary.Write(outf, binary.LittleEndian,
+				uint8(math.Min(1, image[counter].x)*255))
+			binary.Write(outf, binary.LittleEndian,
+				uint8(math.Min(1, image[counter].y)*255))
+			binary.Write(outf, binary.LittleEndian,
+				uint8(math.Min(1, image[counter].z)*255))
 
 			counter = counter + 1
 		}
-		fmt.Println()
+
 	}
 	outf.Close()
 }
