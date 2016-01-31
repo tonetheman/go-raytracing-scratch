@@ -83,8 +83,8 @@ func (s *Sphere) intersect(rayorig Vec3,
 	return true
 }
 
-var INF float64 = 1e8
-var MAX_RAY_DEPTH int = 5
+var Inf float64 = 1e8
+var MaxRayDepth int = 5
 
 func mix(a float64, b float64, mix float64) float64 {
 	return b*mix + a*(1-mix)
@@ -92,11 +92,11 @@ func mix(a float64, b float64, mix float64) float64 {
 
 func trace(rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 	depth int) Vec3 {
-	var tnear float64 = INF
+	var tnear float64 = Inf
 	var sphere *Sphere = nil
 	for i := 0; i < 6; i++ {
-		var t0 float64 = INF
-		var t1 float64 = INF
+		var t0 float64 = Inf
+		var t1 float64 = Inf
 		if spheres[i].intersect(rayorig, raydir, &t0, &t1) {
 			if t0 < 0 {
 				t0 = t1
@@ -124,7 +124,7 @@ func trace(rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 	}
 
 	if (sphere.transparency > 0 ||
-		sphere.reflection > 0) && depth < MAX_RAY_DEPTH {
+		sphere.reflection > 0) && depth < MaxRayDepth {
 
 		var facingratio float64 = -raydir.dot(nhit)
 		var fresneleffect float64 = mix(math.Pow(1-facingratio, 3), 1, 0.1)
@@ -201,7 +201,7 @@ func render(spheres [SphereCount]Sphere) {
 
 	// image is of type []Vec3
 	var image = make([]Vec3, width*height)
-	var counter int = 0
+	var counter int
 	// var pixel Vec3 = image[counter]
 	var invWidth float64 = 1 / float64(width)
 	var invHeight = 1 / float64(height)
@@ -222,7 +222,10 @@ func render(spheres [SphereCount]Sphere) {
 		}
 	}
 
+	// stupid go crap here... just screw the type
 	outf, _ := os.Create("out.ppm")
+
+	// oh but wait you really the type to write this function...
 	writePPMHeader(outf)
 
 	counter = 0
