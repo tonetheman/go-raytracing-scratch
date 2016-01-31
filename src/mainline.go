@@ -2,11 +2,14 @@ package main
 
 import (
 	"encoding/binary"
+	"fmt"
 	"math"
 	"os"
 )
 
 const SphereCount int = 6
+
+var background_count int
 
 type Vec3 struct {
 	x float64
@@ -79,11 +82,11 @@ func mix(a float64, b float64, mix float64) float64 {
 	return b*mix + a*(1-mix)
 }
 
-func trace(rayorig Vec3, raydir Vec3, spheres [6]Sphere,
+func trace(tracer bool, rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 	depth int) Vec3 {
 	var tnear float64 = Inf
 	var sphere *Sphere = nil
-	for i := 0; i < 6; i++ {
+	for i := 0; i < SphereCount; i++ {
 		var t0 float64 = Inf
 		var t1 float64 = Inf
 		if spheres[i].intersect(rayorig, raydir, &t0, &t1) {
@@ -97,7 +100,11 @@ func trace(rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 		}
 	}
 
+	if tracer {
+		fmt.Println("tnear sphere", tnear, sphere)
+	}
 	if sphere == nil {
+		background_count++
 		return Vec3{2, 2, 2}
 	}
 
@@ -121,7 +128,7 @@ func trace(rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 		var refldir Vec3 = raydir.minus(nhit).multConst(2).multConst(raydir.dot(nhit))
 		refldir.normalize()
 
-		var reflection Vec3 = trace(phit.add(nhit).multConst(bias), refldir, spheres, depth+1)
+		var reflection Vec3 = trace(tracer, phit.add(nhit).multConst(bias), refldir, spheres, depth+1)
 		var refraction Vec3 = Vec3{0, 0, 0}
 		if sphere.transparency > 0 {
 			var ior float64 = 1.1
@@ -135,7 +142,7 @@ func trace(rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 			var k float64 = 1 - eta*eta*(1-cosi*cosi)
 			var refrdir Vec3 = raydir.multConst(eta).add(nhit).multConst(eta*cosi - math.Sqrt(k))
 			refldir.normalize()
-			refraction = trace(phit.minus(nhit.multConst(bias)), refrdir, spheres, depth+1)
+			refraction = trace(tracer, phit.minus(nhit.multConst(bias)), refrdir, spheres, depth+1)
 		}
 
 		_tmp0 := reflection.multConst(fresneleffect)
@@ -197,6 +204,7 @@ func render(spheres [SphereCount]Sphere) {
 	var fov float64 = 30.0
 	var aspectratio float64 = float64(width) / float64(height)
 	var angle = math.Tan(math.Pi * 0.5 * fov / 180.0)
+	//var onetime bool = true
 
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
@@ -206,7 +214,18 @@ func render(spheres [SphereCount]Sphere) {
 				((float64(y)+0.5)*invHeight)) * angle
 			var raydir Vec3 = Vec3{xx, yy, -1}
 			raydir.normalize()
-			image[counter] = trace(Vec3{0, 0, 0}, raydir, spheres, 0)
+			//image[counter] = trace(Vec3{0, 0, 0}, raydir, spheres, 0)
+			//image[counter] = trace(false, Vec3{0, 0, 0}, raydir, spheres, 0)
+			if (x == 309 && y == 57) || (y == 309 && x == 57) {
+				//if onetime && image[counter].x != 2 && image[counter].y != 2 && image[counter].z != 2 {
+				image[counter] = trace(true, Vec3{0, 0, 0}, raydir, spheres, 0)
+				fmt.Println("pixel( ", x, y, counter, image[counter])
+
+				//onetime = false
+				//}
+			} else {
+				image[counter] = trace(false, Vec3{0, 0, 0}, raydir, spheres, 0)
+			}
 			counter++
 		}
 	}
@@ -237,7 +256,7 @@ func render(spheres [SphereCount]Sphere) {
 
 func make_sphere(center Vec3, radius float64, surface_color Vec3,
 	reflectivity float64, transparency float64, emission_color Vec3) Sphere {
-	return Sphere{center, radius, 2 * radius, surface_color, emission_color, reflectivity, transparency}
+	return Sphere{center, radius, 2.0 * radius, surface_color, emission_color, reflectivity, transparency}
 }
 
 func main() {
@@ -260,4 +279,5 @@ func main() {
 
 	render(spheres)
 
+	fmt.Println("background_count", background_count)
 }
