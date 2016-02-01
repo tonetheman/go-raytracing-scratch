@@ -77,12 +77,20 @@ func (s *Sphere) intersect(tracer bool, rayorig Vec3,
 	}
 
 	if d2 > s.radius2 {
+		if tracer {
+			fmt.Println("returning now d2 > radius2", d2, s.radius2)
+		}
 		return false
 	}
 
 	var thc float64 = math.Sqrt(s.radius2 - d2)
 	*t0 = tca - thc
 	*t1 = tca + thc
+
+	if tracer {
+		fmt.Println("intersect3:", tca, thc, t0, t1)
+	}
+
 	return true
 }
 
