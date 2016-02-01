@@ -174,7 +174,10 @@ func trace(tracer bool, rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 			}
 			var cosi float64 = -nhit.dot(raydir)
 			var k float64 = 1 - eta*eta*(1-cosi*cosi)
-			var refrdir Vec3 = raydir.multConst(eta).add(nhit).multConst(eta*cosi - math.Sqrt(k))
+			_tmp200 := raydir.multConst(eta)
+			_tmp200a := eta*cosi - math.Sqrt(k)
+			_tmp200b := nhit.multConst(_tmp200a)
+			var refrdir Vec3 = _tmp200.add(_tmp200b)
 			refldir.normalize()
 			if tracer {
 				fmt.Println("about to call trace B")
