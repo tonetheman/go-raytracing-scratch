@@ -153,12 +153,16 @@ func trace(tracer bool, rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 
 		_tmp00 := nhit.multConst(2).multConst(raydir.dot(nhit))
 		var refldir Vec3 = raydir.minus(_tmp00)
+		if tracer {
+			fmt.Println("trace:refldir", refldir)
+		}
 		refldir.normalize()
 		if tracer {
-			fmt.Println("about to call trace A")
+			fmt.Println("about to call trace A", refldir, phit, nhit, bias)
 		}
 		// TODO: something is wrong here with phit and refldir
-		var reflection Vec3 = trace(tracer, phit.add(nhit).multConst(bias), refldir, spheres, depth+1)
+		_tmp000 := nhit.multConst(bias)
+		var reflection Vec3 = trace(tracer, phit.add(_tmp000), refldir, spheres, depth+1)
 		var refraction Vec3 = Vec3{0, 0, 0}
 		if sphere.transparency > 0 {
 			var ior float64 = 1.1
