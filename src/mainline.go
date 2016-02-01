@@ -57,40 +57,18 @@ type Sphere struct {
 
 func (s *Sphere) intersect(tracer bool, rayorig Vec3,
 	raydir Vec3, t0 *float64, t1 *float64) bool {
-	// the next two lines are an experiment
-	// removed types to see what they look like
-	if tracer {
-		fmt.Println("intersect0:", s.center, rayorig)
-	}
 	var l = s.center.minus(rayorig) // took out type here
 	var tca = l.dot(raydir)         // took out type here
-	if tracer {
-		fmt.Println("intersect:", s.center, l, tca, raydir)
-	}
-
 	if tca < 0 {
 		return false
 	}
 	var d2 float64 = l.dot(l) - tca*tca
-	if tracer {
-		fmt.Println("intersect2:", d2, s.radius2)
-	}
-
 	if d2 > s.radius2 {
-		if tracer {
-			fmt.Println("returning now d2 > radius2", d2, s.radius2)
-		}
 		return false
 	}
-
 	var thc float64 = math.Sqrt(s.radius2 - d2)
 	*t0 = tca - thc
 	*t1 = tca + thc
-
-	if tracer {
-		fmt.Println("intersect3:", tca, thc, t0, t1)
-	}
-
 	return true
 }
 
@@ -105,13 +83,7 @@ func trace(tracer bool, rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 	depth int) Vec3 {
 	var tnear float64 = Inf
 	var sphere *Sphere = nil
-	if tracer {
-		fmt.Println("trace:start", rayorig, raydir)
-	}
 	for i := 0; i < SphereCount; i++ {
-		if tracer {
-			fmt.Println("trace: setting t0,t1 to INFINITY")
-		}
 		var t0 float64 = Inf
 		var t1 float64 = Inf
 		if spheres[i].intersect(tracer, rayorig, raydir, &t0, &t1) {
@@ -125,9 +97,6 @@ func trace(tracer bool, rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 		}
 	}
 
-	if tracer {
-		fmt.Println("tnear sphere", tnear, sphere)
-	}
 	if sphere == nil {
 		background_count++
 		return Vec3{2, 2, 2}
@@ -135,17 +104,8 @@ func trace(tracer bool, rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 
 	var surfaceColor Vec3 = Vec3{0, 0, 0}
 	var phit Vec3 = rayorig.add(raydir).multConst(tnear)
-	if tracer {
-		fmt.Println("trace:phit", phit, rayorig, raydir, tnear)
-	}
 	var nhit Vec3 = phit.minus(sphere.center)
-	if tracer {
-		fmt.Println("trace:nhit", nhit, sphere.center)
-	}
 	nhit.normalize()
-	if tracer {
-		fmt.Println("trace:nhit:normalized", nhit)
-	}
 	var bias float64 = 1e-4
 	var inside bool = false
 	if raydir.dot(nhit) > 0 {
@@ -161,13 +121,7 @@ func trace(tracer bool, rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 
 		_tmp00 := nhit.multConst(2).multConst(raydir.dot(nhit))
 		var refldir Vec3 = raydir.minus(_tmp00)
-		if tracer {
-			fmt.Println("trace:refldir", refldir)
-		}
 		refldir.normalize()
-		if tracer {
-			fmt.Println("about to call trace A", refldir, phit, nhit, bias)
-		}
 		// TODO: something is wrong here with phit and refldir
 		_tmp000 := nhit.multConst(bias)
 		var reflection Vec3 = trace(tracer, phit.add(_tmp000), refldir, spheres, depth+1)
@@ -187,9 +141,6 @@ func trace(tracer bool, rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 			_tmp200b := nhit.multConst(_tmp200a)
 			var refrdir Vec3 = _tmp200.add(_tmp200b)
 			refldir.normalize()
-			if tracer {
-				fmt.Println("about to call trace B")
-			}
 			refraction = trace(tracer, phit.minus(nhit.multConst(bias)), refrdir, spheres, depth+1)
 		}
 
