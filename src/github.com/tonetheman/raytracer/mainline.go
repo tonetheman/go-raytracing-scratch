@@ -5,64 +5,29 @@ import (
 	"fmt"
 	"math"
 	"os"
+
+	"github.com/tonetheman/vec3"
 )
 
 const SphereCount int = 6
 
 var background_count int
 
-type Vec3 struct {
-	x float64
-	y float64
-	z float64
-}
-
-func (v Vec3) add(other Vec3) Vec3 {
-	return Vec3{v.x + other.x, v.y + other.y, v.z + other.z}
-}
-func (v Vec3) multConst(c float64) Vec3 {
-	return Vec3{v.x * c, v.y * c, v.z * c}
-}
-func (v Vec3) mult(other Vec3) Vec3 {
-	return Vec3{other.x * v.x, other.y * v.y, other.z * v.z}
-}
-func (v Vec3) length2() float64 {
-	return v.x*v.x + v.y*v.y + v.z*v.z
-}
-func (v Vec3) minus(other Vec3) Vec3 {
-	return Vec3{v.x - other.x, v.y - other.y, v.z - other.z}
-}
-
-// in place
-func (v *Vec3) normalize() {
-	var nor2 float64 = v.length2()
-	if nor2 > 0 {
-		var invNor float64 = 1 / math.Sqrt(nor2)
-		v.x = v.x * invNor
-		v.y = v.y * invNor
-		v.z = v.z * invNor
-	}
-}
-
-func (v Vec3) dot(other Vec3) float64 {
-	return v.x*other.x + v.y*other.y + v.z*other.z
-}
-
 type Sphere struct {
-	center                      Vec3
+	center                      vec3.Vec3
 	radius, radius2             float64
-	surfaceColor, emissionColor Vec3
+	surfaceColor, emissionColor vec3.Vec3
 	transparency, reflection    float64
 }
 
-func (s *Sphere) intersect(tracer bool, rayorig Vec3,
-	raydir Vec3, t0 *float64, t1 *float64) bool {
-	var l = s.center.minus(rayorig) // took out type here
-	var tca = l.dot(raydir)         // took out type here
+func (s *Sphere) intersect(tracer bool, rayorig vec3.Vec3,
+	raydir vec3.Vec3, t0 *float64, t1 *float64) bool {
+	var l = s.center.Minus(rayorig) // took out type here
+	var tca = l.Dot(raydir)         // took out type here
 	if tca < 0 {
 		return false
 	}
-	var d2 float64 = l.dot(l) - tca*tca
+	var d2 float64 = l.Dot(l) - tca*tca
 	if d2 > s.radius2 {
 		return false
 	}
@@ -79,8 +44,8 @@ func mix(a float64, b float64, mix float64) float64 {
 	return b*mix + a*(1-mix)
 }
 
-func trace(tracer bool, rayorig Vec3, raydir Vec3, spheres [6]Sphere,
-	depth int) Vec3 {
+func trace(tracer bool, rayorig vec3.Vec3, raydir vec3.Vec3, spheres [6]Sphere,
+	depth int) vec3.Vec3 {
 	var tnear float64 = Inf
 	var sphere *Sphere = nil
 	for i := 0; i < SphereCount; i++ {
@@ -99,12 +64,12 @@ func trace(tracer bool, rayorig Vec3, raydir Vec3, spheres [6]Sphere,
 
 	if sphere == nil {
 		background_count++
-		return Vec3{2, 2, 2}
+		return vec3.Vec3{2, 2, 2}
 	}
 
-	var surfaceColor Vec3 = Vec3{0, 0, 0}
-	var phit Vec3 = rayorig.add(raydir).multConst(tnear)
-	var nhit Vec3 = phit.minus(sphere.center)
+	var surfaceColor vec3.Vec3 = vec3.Vec3{0, 0, 0}
+	var phit vec3.Vec3 = rayorig.Add(raydir).MultConst(tnear)
+	var nhit vec3.Vec3 = phit.Minus(sphere.center)
 	nhit.normalize()
 	var bias float64 = 1e-4
 	var inside bool = false
